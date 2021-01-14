@@ -1,4 +1,4 @@
-# SparkFun_Ublox_Linux_Library
+# Ublox_Linux_Library
 
 ## How to compile
 * mkdir build
