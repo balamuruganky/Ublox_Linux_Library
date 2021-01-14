@@ -1,0 +1,3 @@
+[submodule "SparkFun_Ublox_Arduino_Library"]
+	path = SparkFun_Ublox_Arduino_Library
+	url = https://github.com/sparkfun/SparkFun_Ublox_Arduino_Library
