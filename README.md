@@ -1,6 +1,11 @@
 # Ublox_Linux_Library
 The aim of this repository to port the Sparkfun_Ublox_Arduino_Library to linux platform.
 
+## Pull the code
+git clone https://github.com/balamuruganky/Ublox_Linux_Library
+cd Ublox_Linux_Library
+git submodule update --init
+
 ## How to compile
 * mkdir build
 * cd build
