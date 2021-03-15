@@ -51,3 +51,20 @@ add_executable(
     )
 
 target_link_libraries(ublox_f9p_test ublox_linux util)
+
+
+
+#
+# Ublox f9p i2c Test
+#
+
+set(
+    ublox_f9p_i2c_test_src
+    linux_examples/ublox_f9p_i2c_test.cpp
+    )
+
+add_executable(
+    ublox_f9p_i2c_test ${ublox_f9p_i2c_test_src}
+    )
+
+target_link_libraries(ublox_f9p_i2c_test ublox_linux util)
