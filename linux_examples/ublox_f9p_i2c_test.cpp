@@ -23,20 +23,35 @@ SOFTWARE.
 #include "SparkFun_Ublox_Arduino_Library.h"
 SFE_UBLOX_GPS myGPS;
 
+#include <string>
+
 int main(int argc, char** argv)
 {
+    printf("Starting uBlox ZED-F9P\n");
+
+    std::string  port = "/dev/ublox_i2c";
+    int address = 0x42;
+
     if(argc == 1) {
-        printf("\nublox_f9p_test <ublox_com> <pseudo_com> (ublox_f9p_test '/dev/ublox_i2c')"); 
+        printf("\nStarting with default port and address.\n"); 
         return 0;
-    } else if (argc == 2) {
-        for(int counter=0;counter<argc;counter++) 
-            printf("\nargv[%d]: %s",counter,argv[counter]);        
-    } else if(argc >= 3) {
-        printf ("\nMore number of arguments...");
+    } else if (argc == 3) {
+
+            port = argv[1];
+            address = std::stoi(argv[2], 0, 16);
+       
+    } else if(argc >= 4) {
+        printf ("\nShould give the port and address as input arguments. Currently giving more arguments...\n");
         return 0;
     } 
 
-    TwoWire wireCom;
+
+    printf("Looking for GPS on port %s at address 0x%02X\n", port.c_str(), address);
+
+    TwoWire wireCom(address);
+    wireCom.init(port.c_str());
+
+
     if (!(wireCom.available())) {
       printf("Failed to init i2c,  Please connect ublox GNSS module and try again... \n");
       return 0;
