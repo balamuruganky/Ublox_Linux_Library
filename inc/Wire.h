@@ -146,10 +146,10 @@ private:
   uint8_t m_quantity;
   int i2c_fd;
 
-  unsigned char m_sendBuf[60];
+  unsigned char m_sendBuf[SHORT_BUFF];
   uint8_t m_sendBufPos = 0;
 
-  unsigned char m_readBuf[60];
+  unsigned char m_readBuf[SHORT_BUFF];
   uint8_t m_readBufPos = 0;
 
   bool l_IsAvailable = false;
