@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "SparkFun_Ublox_Arduino_Library.h"
-SFE_UBLOX_GPS myGPS;
+#include "SparkFun_u-blox_GNSS_Arduino_Library.h"
+SFE_UBLOX_GNSS myGPS;
 
 #include <string>
 
