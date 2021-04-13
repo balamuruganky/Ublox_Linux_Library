@@ -22,17 +22,16 @@ link_directories(
     )
 
 include_directories(
-    ${CMAKE_HOME_DIRECTORY}/inc
-    #${CMAKE_HOME_DIRECTORY}/SparkFun_Ublox_Arduino_Library/src
-    ${CMAKE_HOME_DIRECTORY}/SparkFun_u-blox_GNSS_Arduino_Library/src
+    ${CMAKE_HOME_DIRECTORY}/../inc
+    #${CMAKE_HOME_DIRECTORY}/../SparkFun_Ublox_Arduino_Library/src
+    ${CMAKE_HOME_DIRECTORY}/../SparkFun_u-blox_GNSS_Arduino_Library/src
     )
 
 set(
     ublox_parser_src
-    SparkFun_u-blox_GNSS_Arduino_Library/src/SparkFun_u-blox_GNSS_Arduino_Library.cpp
-    #SparkFun_Ublox_Arduino_Library/src/SparkFun_Ublox_Arduino_Library.cpp
-    src/Print.cpp
-    src/Utils.cpp
+    ../SparkFun_u-blox_GNSS_Arduino_Library/src/SparkFun_u-blox_GNSS_Arduino_Library.cpp
+    ../src/Print.cpp
+    ../src/Utils.cpp
     )
 
 add_library(
@@ -45,7 +44,7 @@ add_library(
 
 set(
     ublox_f9p_test_src
-    linux_examples/ublox_f9p_test.cpp
+    ../linux_examples/ublox_f9p_test.cpp
     )
 
 add_executable(
@@ -62,7 +61,7 @@ target_link_libraries(ublox_f9p_test ublox_linux util)
 
 set(
     ublox_f9p_i2c_test_src
-    linux_examples/ublox_f9p_i2c_test.cpp
+    ../linux_examples/ublox_f9p_i2c_test.cpp
     )
 
 add_executable(

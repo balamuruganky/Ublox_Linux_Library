@@ -31,7 +31,9 @@ SOFTWARE.
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
+#ifndef ANDROID
 #include <pty.h>
+#endif
 
 #include "Common.h"
 #include "Print.h"
@@ -162,6 +164,7 @@ private:
 
 	char* create_pseudo_com() {
 		static char name[SHORT_BUFF] = {'\0'};
+#ifndef ANDROID
 		struct termios tt = {'\0'};
 		int master = 0, slave = 0;
 
@@ -169,10 +172,10 @@ private:
 			printf("Cannot get terminal attributes of stdin\n");
 		}
 		cfmakeraw (&tt);
-		if (openpty (&master, &slave, name, &tt, NULL /*ws*/) < 0) {
+		if (openpty (&master, &slave, name, &tt, NULL) < 0) {
 			printf("Cannot open pty\n");
 		}
-
+#endif
 		return name;
 	}
 };
