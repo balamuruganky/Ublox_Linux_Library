@@ -6,11 +6,16 @@ The aim of this repository to port the SparkFun_u-blox_GNSS_Arduino_Library to l
 * cd Ublox_Linux_Library
 * git submodule update --init
 
-## How to compile
+## How to compile Linux (Assumed that CMake setup done already)
+* cd linux_build
 * mkdir build
 * cd build
 * cmake ..
 * make
+
+## How to compile Android (Assumed that NDK setup done already)
+* cd android_build
+* ndk-build -j2 NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=./Android.mk NDK_APPLICATION_MK=./Application.mk
 
 ## How to execute test
 * cd ../bin (Assuming the current directorty is build directory, created above)
