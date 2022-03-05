@@ -53,6 +53,21 @@ add_executable(
 
 target_link_libraries(ublox_f9p_test ublox_linux util)
 
+#
+# Ublox f9p Test
+#
+
+set(
+    Example2_StartRTCMBase_src
+    ../linux_examples/Example2_StartRTCMBase.cpp
+    )
+
+add_executable(
+    Example2_StartRTCMBase ${Example2_StartRTCMBase_src}
+    )
+
+target_link_libraries(Example2_StartRTCMBase ublox_linux util)
+
 
 
 #
