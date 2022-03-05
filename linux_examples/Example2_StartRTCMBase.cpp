@@ -40,128 +40,113 @@
 #include <Wire.h> //Needed for I2C to GNSS
 
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h> //http://librarymanager/All#SparkFun_u-blox_GNSS
-SFE_UBLOX_GNSS myGNSS;
+SFE_UBLOX_GNSS myGPS;
 
 
-void setup()
-{
-  // Next line did not compile on linux, there is no operator! in class Stream (which Serial is).
-  // while (!Serial); //Wait for user to open terminal
-  Serial.println(F("u-blox NEO-M8P-2 base station example"));
+int main(int argc, char** argv) {
+    printf("Starting uBlox ZED-F9P\n");
+    printf("u-blox NEO-M8P-2 base station example\n");
 
-  Wire.begin();
-  Wire.setClock(400000); //Increase I2C clock speed to 400kHz
+    std::string  port = "/dev/ublox_i2c";
+    int address = 0x42;
 
-  if (myGNSS.begin() == false) //Connect to the u-blox module using Wire port
-  {
-    Serial.println(F("u-blox GNSS not detected at default I2C address. Please check wiring. Freezing."));
-    while (1);
-  }
-
-  myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
-  myGNSS.saveConfiguration(); //Save the current settings to flash and BBR
-
-  while (Serial.available()) Serial.read(); //Clear any latent chars in serial buffer
-  Serial.println(F("Press any key to send commands to begin Survey-In"));
-  while (Serial.available() == 0) ; //Wait for user to press a key
-
-  boolean response;
-
-  //Check if Survey is in Progress before initiating one
-  // From v2.0, the data from getSurveyStatus (UBX-NAV-SVIN) is returned in UBX_NAV_SVIN_t packetUBXNAVSVIN
-  // Please see u-blox_structs.h for the full definition of UBX_NAV_SVIN_t
-  // You can either read the data from packetUBXNAVSVIN directly
-  // or can use the helper functions: getSurveyInActive; getSurveyInValid; getSurveyInObservationTime; and getSurveyInMeanAccuracy
-  response = myGNSS.getSurveyStatus(2000); //Query module for SVIN status with 2000ms timeout (request can take a long time)
-
-  if (response == false) // Check if fresh data was received
-  {
-    Serial.println(F("Failed to get Survey In status. Freezing..."));
-    while (1); //Freeze
-  }
-
-  if (myGNSS.getSurveyInActive() == true) // Use the helper function
-  {
-    Serial.print(F("Survey already in progress."));
-  }
-  else
-  {
-    //Start survey
-    response = myGNSS.enableSurveyMode(300, 2.000); //Enable Survey in, 300 seconds, 2.0m
-    if (response == false)
-    {
-      Serial.println(F("Survey start failed. Freezing..."));
-      while (1);
-    }
-    Serial.println(F("Survey started. This will run until 300s has passed and less than 2m accuracy is achieved."));
-  }
-
-  while(Serial.available()) Serial.read(); //Clear buffer
-
-  //Begin waiting for survey to complete
-  while (myGNSS.getSurveyInValid() == false) // Call the helper function
-  {
-    if(Serial.available())
-    {
-      byte incoming = Serial.read();
-      if(incoming == 'x')
-      {
-        //Stop survey mode
-        response = myGNSS.disableSurveyMode(); //Disable survey
-        Serial.println(F("Survey stopped"));
-        break;
-      }
+    if(argc == 1) {
+      printf("\nStarting with default port and address.\n");
+      return 0;
+    } else if (argc == 3) {
+      port = argv[1];
+      address = std::stoi(argv[2], 0, 16);
+    } else if(argc >= 4) {
+      printf ("\nShould give the port and address as input arguments. Currently giving more arguments...\n");
+      return 0;
     }
 
+
+    printf("Looking for GPS on port %s at address 0x%02X\n", port.c_str(), address);
+
+    TwoWire wireCom(address);
+    wireCom.init(port.c_str());
+
+    if (!(wireCom.available())) {
+      printf("Failed to init i2c,  Please connect ublox GNSS module and try again... \n");
+      return 0;
+    }
+
+    myGPS.begin(wireCom);
+
+
+    myGPS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+    myGPS.saveConfiguration(); //Save the current settings to flash and BBR
+
+
+    boolean response;
+
+    //Check if Survey is in Progress before initiating one
     // From v2.0, the data from getSurveyStatus (UBX-NAV-SVIN) is returned in UBX_NAV_SVIN_t packetUBXNAVSVIN
     // Please see u-blox_structs.h for the full definition of UBX_NAV_SVIN_t
     // You can either read the data from packetUBXNAVSVIN directly
     // or can use the helper functions: getSurveyInActive; getSurveyInValid; getSurveyInObservationTime; and getSurveyInMeanAccuracy
-    response = myGNSS.getSurveyStatus(2000); //Query module for SVIN status with 2000ms timeout (req can take a long time)
-    if (response == true) // Check if fresh data was received
-    {
-      Serial.print(F("Press x to end survey - "));
-      Serial.print(F("Time elapsed: "));
-      Serial.print((int)myGNSS.getSurveyInObservationTime());
+    response = myGPS.getSurveyStatus(2000); //Query module for SVIN status with 2000ms timeout (request can take a long time)
 
-      Serial.print(F(" Accuracy: "));
-      Serial.print(myGNSS.getSurveyInMeanAccuracy());
-      Serial.println();
-    }
-    else
-    {
-      Serial.println(F("SVIN request failed"));
+    if (response == false) {// Check if fresh data was received
+      printf("Failed to get Survey In status. Exiting...\n");
+      return 1;
     }
 
-    delay(1000);
-  }
-  Serial.println(F("Survey valid!"));
+    if (myGPS.getSurveyInActive() == true) {  // Use the helper function
+      printf("Survey already in progress.\n");
+      return 1;
+    } else {
+      //Start survey
+      response = myGPS.enableSurveyMode(300, 2.000); //Enable Survey in, 300 seconds, 2.0m
+      if (response == false) {
+        printf("Survey start failed.  Exiting...\n");
+        return 1;
+      }
+      printf("Survey started. This will run until 300s has passed and less than 2m accuracy is achieved.\n");
+    }
 
-  response = true;
-  response &= myGNSS.enableRTCMmessage(UBX_RTCM_1005, COM_PORT_I2C, 1); //Enable message 1005 to output through I2C port, message every second
-  response &= myGNSS.enableRTCMmessage(UBX_RTCM_1077, COM_PORT_I2C, 1);
-  response &= myGNSS.enableRTCMmessage(UBX_RTCM_1087, COM_PORT_I2C, 1);
-  response &= myGNSS.enableRTCMmessage(UBX_RTCM_1230, COM_PORT_I2C, 10); //Enable message every 10 seconds
 
-  if (response == true)
-  {
-    Serial.println(F("RTCM messages enabled"));
-  }
-  else
-  {
-    Serial.println(F("RTCM failed to enable. Are you sure you have an NEO-M8P?"));
-    while (1); //Freeze
-  }
+    //Begin waiting for survey to complete
+    while (myGPS.getSurveyInValid() == false) { // Call the helper function
 
-  Serial.println(F("Base survey complete! RTCM now broadcasting."));
+      // From v2.0, the data from getSurveyStatus (UBX-NAV-SVIN) is returned in UBX_NAV_SVIN_t packetUBXNAVSVIN
+      // Please see u-blox_structs.h for the full definition of UBX_NAV_SVIN_t
+      // You can either read the data from packetUBXNAVSVIN directly
+      // or can use the helper functions: getSurveyInActive; getSurveyInValid; getSurveyInObservationTime; and getSurveyInMeanAccuracy
+      response = myGPS.getSurveyStatus(2000); //Query module for SVIN status with 2000ms timeout (req can take a long time)
+      if (response == true) { // Check if fresh data was received
+        printf("Time elapsed: %d\n", (int)myGPS.getSurveyInObservationTime());
+        printf(" Accuracy: %f\n", myGPS.getSurveyInMeanAccuracy());
+      } else {
+        printf("SVIN request failed\n");
+      }
+      delay(1000);
+    }
+    printf("Survey valid!\n");
+
+    response = true;
+    response &= myGPS.enableRTCMmessage(UBX_RTCM_1005, COM_PORT_I2C, 1); //Enable message 1005 to output through I2C port, message every second
+    response &= myGPS.enableRTCMmessage(UBX_RTCM_1077, COM_PORT_I2C, 1);
+    response &= myGPS.enableRTCMmessage(UBX_RTCM_1087, COM_PORT_I2C, 1);
+    response &= myGPS.enableRTCMmessage(UBX_RTCM_1230, COM_PORT_I2C, 10); //Enable message every 10 seconds
+
+    if (response == true) {
+      printf("RTCM messages enabled!\n");
+    } else {
+      printf("RTCM failed to enable. Are you sure you have an NEO-M8P?");
+      return 1;
+    }
+    printf("Base survey complete! RTCM now broadcasting.\n");
+
+    while (1) {
+      myGPS.checkUblox(); //See if new data is available. Process bytes as they come in.
+      delay(250); //Don't pound too hard on the I2C bus
+    }
+    return 0;  // prevent warning, won't reach here.
 }
 
-void loop()
-{
-  myGNSS.checkUblox(); //See if new data is available. Process bytes as they come in.
 
-  delay(250); //Don't pound too hard on the I2C bus
-}
 
 //This function gets called from the SparkFun u-blox Arduino Library.
 //As each RTCM byte comes in you can specify what to do with it
@@ -169,7 +154,7 @@ void loop()
 void SFE_UBLOX_GNSS::processRTCM(uint8_t incoming)
 {
   //Let's just pretty-print the HEX values for now
-  if (myGNSS.rtcmFrameCounter % 16 == 0) Serial.println();
+  if (myGPS.rtcmFrameCounter % 16 == 0) Serial.println();
   Serial.print(F(" "));
   if (incoming < 0x10) Serial.print(F("0"));
   Serial.print(incoming, HEX);
